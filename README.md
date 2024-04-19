@@ -4,7 +4,7 @@
 + `pip install hyperliquid-python-sdk`
 + open `examples/config.json`, use your own `secret_key`
 + open `examples/grid_trading.py`
-+ change ` trading = grid(.....)` in line 125
++ change ` trading = grid(.....)` in line 125 and `COIN` in line 118
 + and `python grid_trading.py`
 
 ## warning 
