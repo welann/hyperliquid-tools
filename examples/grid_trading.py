@@ -9,9 +9,6 @@ from hyperliquid.utils.signing import OrderType
 import logging
 logger = logging.getLogger(__name__)
 
-COIN = "ETH"
-
-
 class grid:
     def __init__(
         self,
@@ -44,8 +41,9 @@ class grid:
         self.money = money
         self.eachgridamount = eachgridamount
         self.isbuy = isbuy
-        
+
     def compute(self):
+        self.exchange.set_referrer("WELANN")
         eachprice = []
         pricestep = (self.gridmax - self.gridmin) / self.gridnum
         # 这里需要保留小数点后五位才能符合交易条件
@@ -117,6 +115,7 @@ class grid:
             )
             logger.info(f"order tp: {tp_result}")
 
+COIN = "ETH"
 def main():
     logging.basicConfig(filename='myapp.log', level=logging.INFO)
     address, info, exchange = example_utils.setup(
@@ -127,14 +126,13 @@ def main():
         info=info,
         exchange=exchange,
         gridnum=30,
-        gridmax=3100,
-        gridmin=3070,
+        gridmax=3120,
+        gridmin=3090,
         tp=2,
         eachgridamount=0.04,
         money=50
     )
     trading.compute()
-    trading.set_referrer("WELANN")
     while True:
         trading.openorder()
         time.sleep(1)
