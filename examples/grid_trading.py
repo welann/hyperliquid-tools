@@ -9,6 +9,9 @@ from hyperliquid.utils.signing import OrderType
 import logging
 logger = logging.getLogger(__name__)
 
+
+
+
 class grid:
     def __init__(
         self,
@@ -102,34 +105,34 @@ class grid:
             }
 
             order_result = self.exchange.order(
-                COIN, self.isbuy, 0.004, eachprice[i], {"limit": {"tif": "Gtc"}}
+                COIN, self.isbuy, self.eachgridamount, eachprice[i], {"limit": {"tif": "Gtc"}}
             )
             logger.info(f"order: {order_result}")
             tp_result = self.exchange.order(
                 COIN,
                 not self.isbuy,
-                0.004,
+                self.eachgridamount,
                 eachprice[i] + self.tp,
                 tp_order_type,
                 reduce_only=True,
             )
             logger.info(f"order tp: {tp_result}")
 
-COIN = "ETH"
+COIN = "SOL"
 def main():
     logging.basicConfig(filename='myapp.log', level=logging.INFO)
     address, info, exchange = example_utils.setup(
-        constants.TESTNET_API_URL, skip_ws=True
+        constants.MAINNET_API_URL, skip_ws=True
     )
     trading = grid(
         address=address,
         info=info,
         exchange=exchange,
-        gridnum=30,
-        gridmax=3120,
-        gridmin=3090,
-        tp=2,
-        eachgridamount=0.04,
+        gridnum=10,
+        gridmax=150,
+        gridmin=130,
+        tp=3,
+        eachgridamount=0.15,
         money=50
     )
     trading.compute()
