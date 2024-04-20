@@ -38,8 +38,8 @@ class buyandsell:
 
             logger.info(f"wait {self.waittime}s before closing")
             time.sleep(self.waittime)
-
-        order_result = self.exchange.market_close(self.COIN)
+        #如果希望使用现货交易，需要把market_close换成普通的order，因为 reduce_only=True 这个参数不适用于现货交易
+        order_result = self.exchange.market_close(self.COIN,sz=self.buyamount)
         if order_result["status"] == "ok":
             for status in order_result["response"]["data"]["statuses"]:
                 try:
@@ -53,6 +53,7 @@ class buyandsell:
 def main():
     logging.basicConfig(filename="myapp.log", level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
+    exchange.set_referrer("WELANN")
     buysell = buyandsell(
         address=address, info=info, exchange=exchange, COIN="ETH", buyamount=0.05, waittime=5, isbuy=True
     )
