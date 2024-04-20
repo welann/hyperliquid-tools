@@ -3,6 +3,7 @@
 in this repo, there's two examples for grid trading and buy-wait-sell(Market Making?) operation
 
 ## how to use it
+on spot trading ,using `PURR/USDC` instead of `PURR`
 
 ### for grid trading
 

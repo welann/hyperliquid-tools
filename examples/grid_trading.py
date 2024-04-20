@@ -114,7 +114,8 @@ class grid:
                 self.eachgridamount,
                 eachprice[i] + self.tp,
                 tp_order_type,
-                reduce_only=True,
+                # Reduce-only is invalid for spot trading
+                # reduce_only=True,
             )
             logger.info(f"order tp: {tp_result}")
 
