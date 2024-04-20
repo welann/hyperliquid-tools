@@ -3,6 +3,7 @@ from hyperliquid.utils import constants
 from hyperliquid.info import Info
 import example_utils
 import time
+import random
 
 from hyperliquid.utils.signing import OrderType
 
@@ -57,6 +58,7 @@ def main():
     )
     while True:
         buysell.order()
+        time.sleep(random.randint(3, 13))
 
 
 if __name__ == "__main__":
