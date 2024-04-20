@@ -53,7 +53,7 @@ def main():
     logging.basicConfig(filename="myapp.log", level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
     buysell = buyandsell(
-        address=address, info=info, exchange=exchange, COIN="ETH", buyamount=0.05, waittime=2, isbuy=True
+        address=address, info=info, exchange=exchange, COIN="ETH", buyamount=0.05, waittime=5, isbuy=True
     )
     while True:
         buysell.order()
