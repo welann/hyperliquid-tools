@@ -108,7 +108,7 @@ def main():
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
     exchange.set_referrer("WELANN")
     buysell = buyandsell(
-        address=address, info=info, exchange=exchange, COIN="PURR/USDC", buyamount=1, waittime=5, waittime=5, isbuy=True
+        address=address, info=info, exchange=exchange, COIN="PURR/USDC", buyamount=1, waittime=5, isbuy=True
     )
     while True:
         buysell.order()
