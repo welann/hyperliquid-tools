@@ -31,7 +31,6 @@ class grid:
         gridmax: 网格上界
         gridmin: 网格下界
         tp: 涨多少就卖掉
-        money: 在这个网格中的总投入u数量
         eachgridamount: 每个网格购买的币数量
         """
         self.COIN = COIN
