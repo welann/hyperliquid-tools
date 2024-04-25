@@ -40,8 +40,8 @@ class grid:
         self.tp = tp
         self.eachgridamount = eachgridamount
 
-        self.eachprice=[]
-        # 格式{"price": xxxx,"oid": xxxx}
+        self.eachprice = []
+        # 格式{"index": i, "oid": 0,"activated":False}
         self.buy_orders = []  # 买单.
         self.sell_orders = []  # 卖单.
 
@@ -49,7 +49,7 @@ class grid:
         self.exchange.set_referrer("WELANN")
         pricestep = (self.gridmax - self.gridmin) / self.gridnum
         # 不同币种的精度不一样，出现问题可能需要调整
-        #比如btc的价格是整数
+        # 比如btc的价格是整数
         for i in range(self.gridnum):
             price = self.gridmin + i * pricestep
             self.eachprice.append(round(float(f"{price:.5g}"), 6))
@@ -59,11 +59,10 @@ class grid:
         # 初始化网格订单
         for i in range(self.gridnum):
             # 只在当前价格下方开单
-            # 如果当前已经有对应价格的单子了则不开
             midprice = float(self.info.all_mids()[self.COIN][:-1])
             if self.eachprice[i] > midprice:
                 logger.info("grid price is higher than price ")
-                self.buy_orders.append({"index": i, "oid": 0,"activated":False})
+                self.buy_orders.append({"index": i, "oid": 0, "activated": False})
                 continue
 
             order_result = self.exchange.order(
@@ -77,21 +76,18 @@ class grid:
                     if order_result["response"]["data"]["statuses"][0].get("resting")
                     else order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
                 )
-                self.buy_orders.append({"index": i, "oid": buy_oid,"activated":True})
+                self.buy_orders.append({"index": i, "oid": buy_oid, "activated": True})
 
         logger.info(f"inital buy orders: {self.buy_orders}")
 
     def check_buy_order(self):
-        # print(f"check buy order: {self.buy_orders}")
         logging.info(f"check buy order: {self.buy_orders}")
         for buy_order in self.buy_orders:
             if buy_order["activated"]:
                 order_status = self.info.query_order_by_oid(self.address, buy_order["oid"])
-                # print("Order status by oid:", order_status)
                 logging.info("Order status by oid:", order_status)
-                # print(order_status.get("status"))
                 logging.info(order_status.get("status"))
-                status=order_status.get("status")
+                status = order_status.get("status")
                 if status != "unknownOid":
                     # 如果此订单已成交
                     if order_status["order"].get("status") == "filled":
@@ -109,33 +105,27 @@ class grid:
                                 if sell_order_result["response"]["data"]["statuses"][0].get("resting")
                                 else sell_order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
                             )
-                            #保存卖单
-                            self.sell_orders.append({"index": buy_order["index"], "oid": sell_oid,"activated":True})
-                            #删除这个订单
+                            # 保存卖单
+                            self.sell_orders.append({"index": buy_order["index"], "oid": sell_oid, "activated": True})
+                            # 删除这个订单
                             self.buy_orders.remove(buy_order)
 
-
-
     def check_sell_order(self):
-        # print(f"check sell order: {self.sell_orders}")
         logging.info(f"check sell order: {self.sell_orders}")
         for sell_order in self.sell_orders:
             order_status = self.info.query_order_by_oid(self.address, sell_order["oid"])
-            # print("Order status by oid:", order_status)
-            # print(order_status.get("status"))
             logging.info(order_status.get("status"))
-            status=order_status.get("status")
+            status = order_status.get("status")
             if status != "unknownOid":
                 # 如果此订单已成交
                 if order_status["order"].get("status") == "filled":
                     logging.info(f"sell order: {sell_order} filled")
-                    # print(f"sell order: {sell_order} filled")
                     self.sell_orders.remove(sell_order)
 
     def check_grid(self):
-        activated_orders = [False]*self.gridnum
+        activated_orders = [False] * self.gridnum
         for buy_order in self.buy_orders:
-            if buy_order["activated"]:  
+            if buy_order["activated"]:
                 activated_orders[buy_order["index"]] = True
         for sell_order in self.sell_orders:
             if sell_order["activated"]:
@@ -145,9 +135,9 @@ class grid:
         midprice = float(self.info.all_mids()[self.COIN][:-1])
         for i in range(self.gridnum):
             # 只在当前价格下方开单
-            if self.eachprice[i]<midprice:
-                #如果当前网格未激活的话
-                if activated_orders[i]==False:
+            if self.eachprice[i] < midprice:
+                # 如果当前网格未激活的话
+                if activated_orders[i] == False:
                     order_result = self.exchange.order(
                         self.COIN, True, self.eachgridamount, self.eachprice[i], {"limit": {"tif": "Gtc"}}
                     )
@@ -159,14 +149,13 @@ class grid:
                             if order_result["response"]["data"]["statuses"][0].get("resting")
                             else order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
                         )
-                        self.buy_orders.append({"index": i, "oid": buy_oid,"activated":True})
-
+                        self.buy_orders.append({"index": i, "oid": buy_oid, "activated": True})
 
     def trader(self):
-        self.check_buy_order()    
         self.check_buy_order()
         self.check_sell_order()
         self.check_grid()
+
 
 def main():
     logging.basicConfig(filename="grid.log", level=logging.INFO)
