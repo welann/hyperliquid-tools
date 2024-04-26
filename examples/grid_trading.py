@@ -273,9 +273,7 @@ class grid:
             self.check_buy_order()
             self.check_sell_order()
             self.check_grid()
-            
-        time.sleep(1)
-        
+       
 
 
 def main():
