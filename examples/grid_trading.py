@@ -263,7 +263,7 @@ class grid:
             self.hasspot_compute()
         else:
             self.compute()
-            
+
     def trader(self):
         if self.hasspot:
             self.hasspot_check_buy_order()
@@ -281,6 +281,15 @@ class grid:
 def main():
     logging.basicConfig(filename="grid.log", level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
+    """
+        COIN: 在哪个币上交易
+        gridnum: 网格数量
+        gridmax: 网格上界
+        gridmin: 网格下界
+        tp: 涨多少就卖掉
+        eachgridamount: 每个网格购买的币数量
+        hasspot: 如果为True,则会在当前价格上方放现货卖单,所以需要确保钱包中有现货
+    """
     trading = grid(
         address=address,
         info=info,
