@@ -117,10 +117,19 @@ class buyandsell:
                 return True
 
         #没完成的就取消
-        self.exchange.cancel(self.COIN, oid)
-        logging.info(f"cancel buy order: {oid}")
+        # {'status': 'ok', 'response': {'type': 'cancel', 'data': {'statuses': ['success']}}}
+        cancel_status=self.exchange.cancel(self.COIN, oid)
+        status = cancel_status.get("status")
+        if status == "ok":
+            statuses=cancel_status["response"]["data"]["statuses"][0]
+            if statuses=="success":
+                logging.info(f"cancel buy order: {oid}")
+                return False
+            else:
+                self.status=not self.status
+                logging.info(f"order: {oid} filled")
+                return True
         # time.sleep(1)
-        return False
         
 
 
