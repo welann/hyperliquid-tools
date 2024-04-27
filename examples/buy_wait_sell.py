@@ -27,6 +27,7 @@ class buyandsell:
         self.buyamount = buyamount
         self.waittime = waittime
         self.isbuy = isbuy
+        self.status=True
 
     def _slippage_price(
         self,
@@ -57,11 +58,11 @@ class buyandsell:
         #     address = self.address
         # if self.vault_address:
         #     address = self.vault_address
-        if self.COIN=="PURR/USDC":
+        if self.COIN == "PURR/USDC":
             logger.info("sell purr")
             px = self._slippage_price(self.COIN, False, slippage)
-            return self.exchange.order(self.COIN,False,self.buyamount,px,{"limit": {"tif": "Gtc"}})
-    
+            return self.exchange.order(self.COIN, False, self.buyamount, px, {"limit": {"tif": "Gtc"}})
+
         positions = self.info.user_state(address)["assetPositions"]
         for position in positions:
             item = position["position"]
@@ -71,12 +72,13 @@ class buyandsell:
             if not sz:
                 sz = abs(szi)
             is_buy = True if szi < 0 else False
-            
+
             # Get aggressive Market Price
             px = self._slippage_price(coin, is_buy, slippage, px)
             # Market Order is an aggressive Limit Order IoC
-            return self.exchange.order(coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}} , reduce_only=True, cloid=cloid)
-        
+            return self.exchange.order(
+                coin, is_buy, sz, px, order_type={"limit": {"tif": "Ioc"}}, reduce_only=True, cloid=cloid
+            )
 
     def order(self):
         order_result = self.exchange.market_open(self.COIN, self.isbuy, self.buyamount, None, 0.01)
@@ -92,7 +94,7 @@ class buyandsell:
 
             logger.info(f"wait {self.waittime}s before closing")
             time.sleep(self.waittime)
-        order_result = self.market_close(self.COIN,sz=self.buyamount)
+        order_result = self.market_close(self.COIN, sz=self.buyamount)
         if order_result["status"] == "ok":
             for status in order_result["response"]["data"]["statuses"]:
                 try:
@@ -102,18 +104,82 @@ class buyandsell:
                     logger.info(f'Error: {status["error"]}')
         logger.info(f"sell : {order_result}")
 
+    def check_oid(self,oid)->bool:   
+        time.sleep(0.5)
+        order_status = self.info.query_order_by_oid(self.address, oid)
+
+        status = order_status.get("status")
+        #检查订单状态
+        if status != "unknownOid":
+            if order_status["order"].get("status") == "filled":
+                logging.info(f"order: {order_status} filled")
+                self.status=not self.status
+                return True
+
+        #没完成的就取消
+        self.exchange.cancel(self.COIN, oid)
+        logging.info(f"cancel buy order: {oid}")
+        # time.sleep(1)
+        return False
+        
+
+
+    def midbuyandsell(self,checktime=7):
+        """
+        以midprice买入/卖出，随后查询订单状态
+        在n秒内未完成则取消订单，重新下订单
+        若订单完成，更新midprice，开相反方向的订单
+        在n秒内未完成则取消订单，重新下订单
+        """
+        midprice = self.info.all_mids()[self.COIN]
+        midprice=round(float(f"{float(midprice):.5g}"), 6)
+        order_result = self.exchange.order(self.COIN, self.status, self.buyamount, midprice, {"limit": {"tif": "Gtc"}})
+        logging.info(f"order_result: {order_result}")
+
+        if order_result.get("status") == "ok":
+            oid = (
+                order_result["response"]["data"]["statuses"][0]["resting"]["oid"]
+                if order_result["response"]["data"]["statuses"][0].get("resting")
+                else order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
+            )
+            order=self.check_oid(oid)
+
+            if order==False:
+                return
+            
+            #下一轮开始相反方向的开单
+            logging.info("=========")
+            logging.info(f"first order: {oid} filled")
+            logging.info(f"next round : { self.status}")
+            logging.info("=========")
+            time.sleep(random.randint(3, 11))
+
+
+                
 
 def main():
     logging.basicConfig(filename="myapp.log", level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
     exchange.set_referrer("WELANN")
+    """
+    COIN: 在哪个币上交易
+    buyamount: 买入多少
+    waittime: 多久后卖出
+    isbuy: 先买后卖还是先卖后买
+    """
     buysell = buyandsell(
         address=address, info=info, exchange=exchange, COIN="PURR/USDC", buyamount=1, waittime=5, isbuy=True
     )
     while True:
-        buysell.order()
-        time.sleep(random.randint(3, 13))
-
+        #旧版
+        #以市价买入卖出
+        # buysell.order()
+        # time.sleep(random.randint(3, 13))
+        
+        #新版
+        #以中间价格限价买入卖出
+        #手续费上有优势，但是其他风险不确定
+        buysell.midbuyandsell(checktime=11)
 
 if __name__ == "__main__":
     main()
