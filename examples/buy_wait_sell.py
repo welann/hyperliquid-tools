@@ -146,19 +146,25 @@ class buyandsell:
         logging.info(f"order_result: {order_result}")
 
         if order_result.get("status") == "ok":
-            oid = (
-                order_result["response"]["data"]["statuses"][0]["resting"]["oid"]
-                if order_result["response"]["data"]["statuses"][0].get("resting")
-                else order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
-            )
-            order=self.check_oid(oid)
+            # {'status': 'ok', 'response': {'type': 'order', 'data': {'statuses': [{'error': 'Insufficient spot balance asset=10000'}]}}}
+            if order_result["response"]["data"]["statuses"][0].get("error"):
+                logging.info(f"order: {order_result['response']['data']['statuses'][0]['error']}")
+                self.status=not self.status
+            else:
 
-            if order==False:
-                return
+                oid = (
+                    order_result["response"]["data"]["statuses"][0]["resting"]["oid"]
+                    if order_result["response"]["data"]["statuses"][0].get("resting")
+                    else order_result["response"]["data"]["statuses"][0]["filled"]["oid"]
+                )
+                order=self.check_oid(oid)
+
+                if order==False:
+                    return
             
             #下一轮开始相反方向的开单
             logging.info("=========")
-            logging.info(f"first order: {oid} filled")
+            # logging.info(f"first order: {oid} filled")
             logging.info(f"next round : { self.status}")
             logging.info("=========")
             time.sleep(random.randint(3, 11))
