@@ -133,7 +133,7 @@ class buyandsell:
         
 
 
-    def midbuyandsell(self,checktime=7):
+    def midbuyandsell(self):
         """
         以midprice买入/卖出，随后查询订单状态
         在n秒内未完成则取消订单，重新下订单
@@ -173,7 +173,7 @@ class buyandsell:
                 
 
 def main():
-    logging.basicConfig(filename="myapp.log", level=logging.INFO)
+    logging.basicConfig(filename="purr.log", level=logging.INFO)
     address, info, exchange = example_utils.setup(constants.MAINNET_API_URL, skip_ws=True)
     exchange.set_referrer("WELANN")
     """
@@ -183,7 +183,7 @@ def main():
     isbuy: 先买后卖还是先卖后买
     """
     buysell = buyandsell(
-        address=address, info=info, exchange=exchange, COIN="PURR/USDC", buyamount=1, waittime=5, isbuy=True
+        address=address, info=info, exchange=exchange, COIN="PURR/USDC", buyamount=150, waittime=5, isbuy=True
     )
     while True:
         #旧版
@@ -194,7 +194,7 @@ def main():
         #新版
         #以中间价格限价买入卖出
         #手续费上有优势，但是其他风险不确定
-        buysell.midbuyandsell(checktime=11)
+        buysell.midbuyandsell()
 
 if __name__ == "__main__":
     main()
