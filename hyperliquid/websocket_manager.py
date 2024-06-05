@@ -83,7 +83,7 @@ class WebsocketManager(threading.Thread):
     def on_open(self, _ws):
         logging.debug("on_open")
         self.ws_ready = True
-        for (subscription, active_subscription) in self.queued_subscriptions:
+        for subscription, active_subscription in self.queued_subscriptions:
             self.subscribe(subscription, active_subscription.callback, active_subscription.subscription_id)
 
     def subscribe(
@@ -115,4 +115,4 @@ class WebsocketManager(threading.Thread):
         if len(new_active_subscriptions) == 0:
             self.ws.send(json.dumps({"method": "unsubscribe", "subscription": subscription}))
         self.active_subscriptions[identifier] = new_active_subscriptions
-        return len(active_subscriptions) != len(active_subscriptions)
+        return len(active_subscriptions) != len(new_active_subscriptions)
