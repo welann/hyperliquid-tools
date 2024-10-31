@@ -14,32 +14,32 @@ for spot trading ,using `PURR/USDC` instead of `PURR`, and make sure that the ba
 ### for grid trading
 
 + `pip install hyperliquid-python-sdk`
-+ open `examples/config.json`, use your own `secret_key`
-+ open `examples/grid_trading.py`
++ open `config.json`, use your own `secret_key`
++ open `grid_trading.py`
 + change `trading = grid(.....)`
-+ and run `python examples/grid_trading.py`
++ and run `python grid_trading.py`
 
 ### 网格交易
 
 + `pip install hyperliquid-python-sdk`
-+ 打开 `examples/config.json`, 使用你自己的 `secret_key`，注意别搞错了，在测试中很多人都在这上面搞错
-+ 打开 `examples/grid_trading.py`
++ 打开 `config.json`, 使用你自己的 `secret_key`，注意别搞错了，在测试中很多人都在这上面搞错
++ 打开 `grid_trading.py`
 + 修改这里： `trading = grid(.....)`，把参数改为自己想要的
-+ 最后在终端里运行 `python examples/grid_trading.py`
++ 最后在终端里运行 `python grid_trading.py`
 
 ### for buy-wait-sell(Market Making?)
 + `pip install hyperliquid-python-sdk`
-+ open `examples/config.json`, use your own `secret_key`
-+ open `examples/buy_wait_sell.py`
++ open `config.json`, use your own `secret_key`
++ open `buy_wait_sell.py`
 + change `buysell = buyandsell(...)` 
-+ and run `python examples/buy_wait_sell.py`
++ and run `python buy_wait_sell.py`
 
 ### 刷量
 + `pip install hyperliquid-python-sdk`
-+ 打开 `examples/config.json`, 使用你自己的 `secret_key`，注意别搞错了，在测试中很多人都在这上面搞错
-+ 打开 `examples/buy_wait_sell.py`
++ 打开 `config.json`, 使用你自己的 `secret_key`，注意别搞错了，在测试中很多人都在这上面搞错
++ 打开 `buy_wait_sell.py`
 + 修改这里： `buysell = buyandsell(...)` ，把参数改为自己想要的
-+ 最后在终端里运行 `python examples/buy_wait_sell.py`
++ 最后在终端里运行 `python buy_wait_sell.py`
 
 ## warning 
 

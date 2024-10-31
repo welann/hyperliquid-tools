@@ -1,5 +1,0 @@
-{
-    "comments": "Fill in your secret key e.g. 0x0000000000000000000000000000000000000000000000000000000000000000If you are using an Agent/API Wallet you MUST also specify the public address of your account, not theaddress of the Agent/API Wallet.Otherwise, feel free to leave it blank and it will be automatically derived from the secret key.",
-    "secret_key": "",
-    "account_address": ""
-}
