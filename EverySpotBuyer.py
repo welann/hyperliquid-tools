@@ -148,7 +148,7 @@ class Buyer:
                 self.buy(spot, buy_sz, buyprice)
 
             time.sleep(1)
-            # 如果你不想全买，可以把下面两行接触注释，把数字改成你想要购买的数量
+            # 如果你不想全买，可以把下面两行解除注释，把数字改成你想要购买的数量
             # if i > 20:
             #     break
 
