@@ -19,7 +19,7 @@ During this process, due to various reasons, the final amount of coins retained 
 + 拉到代码最下面，把参数改为自己想要的（secret_key, usdc_amount, max_mc）
 + 最后在终端里运行 `python EverySpotBuyer.py`
 + 用完后记得删除，不要泄露你的私钥
-
+---
 + `pip install hyperliquid-python-sdk`
 + Open `EverySpotBuyer.py`
 + Scroll to the bottom of the code and modify the parameters to your desired values (secret_key, usdc_amount, max_mc)
