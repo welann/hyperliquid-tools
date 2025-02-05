@@ -22,6 +22,8 @@ class grid:
         gridmin=0.06,
         investamount=100,
         mode=1,
+        address=None,
+        hasspot=False,
     ):
         self.info = info
         self.exchange = exchange
@@ -40,6 +42,8 @@ class grid:
         self.gridmin = gridmin
         self.investamount = investamount
         self.mode=mode
+        self.hasspot=hasspot
+        self.address = address
 
         self.eachbuyprice = []
         self.eachsellprice = []
@@ -94,7 +98,7 @@ class grid:
         #eachgridamount需要根据币的信息，把数量转化为价格
         #不过或许也不用
         self.eachgridamount = self.investamount / self.gridnum
-        logger.info(f"each grid's price: {self.eachprice}")
+        logger.info(f"each grid's price: {self.eachbuyprice}")
         logger.info(f"each grid buy: {self.eachgridamount} {self.COIN}")
 
         # 初始化网格订单
@@ -104,13 +108,13 @@ class grid:
             #这里换成查询数据库
             #并把订单信息存入数据库
             midprice = float(self.info.all_mids()[self.COIN][:-1])
-            if self.eachprice[i] > midprice:
+            if self.eachbuyprice[i] > midprice:
                 logger.info("grid price is higher than price ")
                 self.buy_orders.append({"index": i, "oid": 0, "activated": False})
                 continue
 
             order_result = self.exchange.order(
-                self.COIN, True, self.eachgridamount, self.eachprice[i], {"limit": {"tif": "Gtc"}}
+                self.COIN, True, self.eachgridamount, self.eachbuyprice[i], {"limit": {"tif": "Gtc"}}
             )
             logger.info(f"init the {i} th grid order: {order_result}")
 
@@ -138,7 +142,7 @@ class grid:
                         logging.info(f"buy order: {buy_order} filled")
 
                         # 下个卖单
-                        sell_price = self.eachprice[buy_order["index"]] + self.tp
+                        sell_price = self.eachbuyprice[buy_order["index"]] + self.tp
                         sell_order_result = self.exchange.order(
                             self.COIN, False, self.eachgridamount, sell_price, {"limit": {"tif": "Gtc"}}
                         )
@@ -180,11 +184,11 @@ class grid:
         midprice = float(self.info.all_mids()[self.COIN][:-1])
         for i in range(self.gridnum):
             # 只在当前价格下方开单
-            if self.eachprice[i] < midprice:
+            if self.eachbuyprice[i] < midprice:
                 # 如果当前网格未激活的话
                 if activated_orders[i] == False:
                     order_result = self.exchange.order(
-                        self.COIN, True, self.eachgridamount, self.eachprice[i], {"limit": {"tif": "Gtc"}}
+                        self.COIN, True, self.eachgridamount, self.eachbuyprice[i], {"limit": {"tif": "Gtc"}}
                     )
                     logger.info(f"init the {i} th grid order: {order_result}")
 
@@ -222,7 +226,7 @@ class grid:
             return
         
         self.eachgridamount = self.investamount / self.gridnum
-        logger.info(f"each grid's price: {self.eachprice}")
+        logger.info(f"each grid's price: {self.eachbuyprice}")
         logger.info(f"each grid buy: {self.eachgridamount} {self.COIN}")
 
         # 初始化网格订单
@@ -235,9 +239,9 @@ class grid:
             #如果不够，需要以现价购买足够的币
             #并把订单信息存入数据库
             midprice = float(self.info.all_mids()[self.COIN][:-1])
-            if self.eachprice[i] > midprice:
+            if self.eachbuyprice[i] > midprice:
                 order_result = self.exchange.order(
-                    self.COIN, False, self.eachgridamount, self.eachprice[i] + self.tp, {"limit": {"tif": "Gtc"}}
+                    self.COIN, False, self.eachgridamount, self.eachbuyprice[i] + self.tp, {"limit": {"tif": "Gtc"}}
                 )
                 logger.info(f"SELL: init the {i} th grid order : {order_result}")
 
@@ -251,7 +255,7 @@ class grid:
             else:
                 # 在当前价格下方开买单
                 order_result = self.exchange.order(
-                    self.COIN, True, self.eachgridamount, self.eachprice[i], {"limit": {"tif": "Gtc"}}
+                    self.COIN, True, self.eachgridamount, self.eachbuyprice[i], {"limit": {"tif": "Gtc"}}
                 )
                 logger.info(f"BUY: init the {i} th grid order: {order_result}")
     
@@ -278,7 +282,7 @@ class grid:
                 if order_status["order"].get("status") == "filled":
                     logging.info(f"buy order: {buy_order} filled")
                     # 下个卖单
-                    sell_price = self.eachprice[buy_order["index"]] + self.tp
+                    sell_price = self.eachbuyprice[buy_order["index"]] + self.tp
                     sell_order_result = self.exchange.order(
                         self.COIN, False, self.eachgridamount, sell_price, {"limit": {"tif": "Gtc"}}
                     )
@@ -310,7 +314,7 @@ class grid:
                         self.COIN,
                         True,
                         self.eachgridamount,
-                        self.eachprice[sell_order["index"]],
+                        self.eachbuyprice[sell_order["index"]],
                         {"limit": {"tif": "Gtc"}},
                     )
                     if buy_order_result.get("status") == "ok":
@@ -345,8 +349,9 @@ def main():
     baseurl = constants.MAINNET_API_URL
     skey = ""
     account: LocalAccount = eth_account.Account.from_key(skey)
+    print(account.address)
     exchange = Exchange(account, baseurl)
-    
+    info=Info(base_url=baseurl,skip_ws=True)
 
     """
         COIN: 在哪个币上交易
@@ -358,12 +363,15 @@ def main():
         hasspot: 如果为True,则会在当前价格上方放现货卖单,所以需要确保钱包中有现货
     """
     trading = grid(
+        info=info,
         exchange=exchange,
-        COIN="PURR/USDC",
-        gridnum=1,
-        gridmax=0.16,
-        gridmin=0.14,
-        investamount=100,
+        COIN="HYPE",
+        gridnum=10,
+        gridmax=30,
+        gridmin=20,
+        investamount=22,
+        hasspot=False,
+        address=account.address,
     )
     # trading = grid(
     #     address=address,
